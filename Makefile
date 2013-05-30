@@ -4,9 +4,9 @@ DEBUG=0
 COMFLAGS=
 DLINK=$(COMFLAGS)
 DFLAGS=$(COMFLAGS) -I./src -I./src/derelict/util -I./src/derelict/sdl -I./src/resid -I./src/player -I./src/font -J./src/c64 -J./src/font
-CFLAGS=$(COMFLAGS) 
+CFLAGS=$(COMFLAGS)
 CXXFLAGS=$(CFLAGS) -I./src -O2
-OUTPUT_OPTION = 
+OUTPUT_OPTION =
 DC=ldc2
 EXE=
 TARGET=ccutter
@@ -93,7 +93,7 @@ CXX_SRCS = src/audio/resid/residctrl.cpp \
 	src/resid-fp/sidfp.cpp \
 	src/resid-fp/versionfp.cpp \
 	src/resid-fp/voicefp.cpp \
-	src/resid-fp/wavefp.cpp 
+	src/resid-fp/wavefp.cpp
 
 CXX_OBJS = $(CXX_SRCS:.cpp=.o)
 
@@ -125,6 +125,7 @@ release: all
 
 	rm -rf CheeseCutter.app
 	mkdir -p CheeseCutter.app/Contents/Frameworks
+	mkdir -p CheeseCutter.app/Contents/MacOS
 	cp -r arch/MacOs/Contents CheeseCutter.app
 	cp -r /Library/Frameworks/SDL.framework CheeseCutter.app/Contents/Frameworks
 	cp $(TARGET) CheeseCutter.app/Contents/MacOS
@@ -135,7 +136,7 @@ dist:	release
 	rm -rf CheeseCutter_2.5.0.dmg
 	arch/makedmg.sh
 
-clean: 
+clean:
 	rm -f *.o *~ resid/*.o resid-fp/*.o ccutter ct2util \
 		$(C64OBJS) $(OBJS) $(CTOBJS) $(CXX_OBJS) $(UTILOBJS)
 
