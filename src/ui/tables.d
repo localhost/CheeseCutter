@@ -130,10 +130,10 @@ class HexTable : Table {
 	}
 
 	int keypress(Keyinfo key) {
-		if(key.mods & KMOD_CTRL || key.mods & KMOD_ALT || 
+		if(key.mods & KMOD_CTRL || key.mods & KMOD_ALT ||
 		   key.mods & KMOD_META) return OK;
 
-		switch(key.raw) 
+		switch(key.raw)
 		{
 		case SDLK_LEFT:
 			if(input.step(-1) == WRAP) {
@@ -145,7 +145,7 @@ class HexTable : Table {
 				stepColumn(1);
 			}
 			break;
-		case SDLK_INSERT:
+		case SDLK_INSERT, SDLK_HASH:
 			insertRow();
 			break;
 		case SDLK_DELETE:
@@ -176,7 +176,7 @@ class HexTable : Table {
 		case SDLK_h:
 			showByteDescription();
 			break;
-			
+
 		default:
 			if(input.keypress(key) == WRAP) {
 				stepColumnWrap(1);
@@ -197,10 +197,10 @@ class HexTable : Table {
 	}
 
 protected:
-	
+
 	void showByteDescription() {
 	}
-	
+
 	void showByteDescription(PetString pet) {
 		if(song.ver < 9 || !displayHelp) return;
 		string[] s = com.fb.petscii2D(pet).splitlines();
@@ -222,7 +222,7 @@ class InsValueTable : HexTable {
 	}
 
 	override void refresh() {
-		data = song.instrumentTable; 
+		data = song.instrumentTable;
 	}
 
 	int keypress(Keyinfo key) {
@@ -289,7 +289,7 @@ class InsValueTable : HexTable {
 			int p = (i + viewOffset);
 			if(p > 47) p -= 48;
 			assert(p >= 0 && p < 48);
-			
+
 			int c = (ui.ui.activeInstrument >= 0 && row == p) ? 15 : 12;
 			screen.cprint(area.x,area.y + i + 1, c, 0, format("%02X:", p));
 			for(j=0; j<8; j++) {
@@ -298,7 +298,7 @@ class InsValueTable : HexTable {
 				screen.cprint(area.x+3+j*3,area.y + i + 1,hl,0, format("%02X ", data[ofs]));
 			}
 			string label = insName(p)[0..width];
-			if(paddedStringLength(label, 32) == 0) 
+			if(paddedStringLength(label, 32) == 0)
 				screen.cprint(area.x + 27, area.y + 1 + i, 11, 0,
 						  format("No description" ~ repeat(" ", width-14)));
 			else
@@ -340,12 +340,12 @@ class InsTable : Window {
 		activateInsValueTable();
 	}
 
-	override const ContextHelp contextHelp() { 
+	override const ContextHelp contextHelp() {
 		if(song.ver > 8)
-			return genPlayerContextHelp("Instrument table", 
+			return genPlayerContextHelp("Instrument table",
 										song.instrumentByteDescriptions);
 		return ui.help.HELPMAIN;
-	}		
+	}
 
 	override void refresh() {
 		super.refresh();
@@ -372,7 +372,7 @@ class InsTable : Window {
 		activateInsValueTable();
 		active.update();
 	}
-	
+
 	void activateDescInput() {
 		update();
 		active = insdesc;
@@ -439,7 +439,7 @@ class CmdTable : HexTable {
 			screen.fprint(area.x,area.y, "`01Cmd (Alt-S)");
 		for(i = 0; i < visibleRows; i++) {
 			int ofs = (viewOffset + i) & 0x3f;
-			screen.fprint(area.x,area.y + i + 1, 
+			screen.fprint(area.x,area.y + i + 1,
 						  format("`0c%02X:`0d%01X-`05%02X %02X", ofs,
 								 song.superTable[ofs] & 15,
 								 song.superTable[ofs+64],
@@ -483,7 +483,7 @@ class CmdTable : HexTable {
 		song.superTable[position+128] = cast(ubyte)input.toInt(3, 5);
 		if(r == WRAP) {
 			stepRow(1);
-		} 
+		}
 		return OK;
 	}
 
@@ -505,12 +505,12 @@ class CmdTable : HexTable {
 		}
 	}
 
-	override ContextHelp contextHelp() { 
+	override ContextHelp contextHelp() {
 		if(song.ver > 9)
-			return genPlayerContextHelp("Command table", 
+			return genPlayerContextHelp("Command table",
 										song.cmdDescriptions);
 		return ui.help.HELPMAIN;
-	}		
+	}
 
 	override void showByteDescription() {
 		if(song.ver > 9) {
@@ -555,17 +555,17 @@ class ChordTable : HexTable {
 
 		for(i = 0; i < visibleRows; i++) {
 			screen.fprint(area.x + 5, area.y + i + 1, "  ");
-		}		
+		}
 
 		int[] chordno = getHighestChordIndex();
-		
+
 		{
 			int ct;
 			for(i = 0; i < viewOffset; i++) {
 				if(data[i] >= 0x80) ct++;
 			}
 			bool doPrint = true;
-			int row = viewOffset & 127; 
+			int row = viewOffset & 127;
 			for(i = 0; i < visibleRows; i++,row++) {
 				if(row > 127) {
 					row -= 128;
@@ -672,7 +672,7 @@ class WaveTable : HexTable {
 			case SDLK_g:
 				seekCurWave();
 				return OK;
-			default: 
+			default:
 				break;
 			}
 		}
@@ -685,7 +685,7 @@ class WaveTable : HexTable {
 				refresh();
 				set();
 				return OK;
-			case SDLK_INSERT:
+			case SDLK_INSERT, SDLK_HASH:
 				song.wavetableInsert(row);
 				refresh();
 				set();
@@ -712,7 +712,7 @@ class WaveTable : HexTable {
 			t1 = data[row];
 			t2 = data[row+256];
 			int col = (t1 == 0x7e || t1 == 0x7f) ?  0x0d : 0x05;
-			screen.fprint(area.x,area.y + i + 1, format("`0c%02X:`%02x%02X %02X", 
+			screen.fprint(area.x,area.y + i + 1, format("`0c%02X:`%02x%02X %02X",
 														(i + viewOffset)&255, col, t1, t2));
 
 		}
@@ -736,15 +736,15 @@ class WaveTable : HexTable {
 		}
 	}
 
-	override ContextHelp contextHelp() { 
+	override ContextHelp contextHelp() {
 		if(song.ver > 9)
-			return genPlayerContextHelp("Wave table", 
+			return genPlayerContextHelp("Wave table",
 										song.waveDescriptions);
 		return ui.help.HELPMAIN;
-	}		
+	}
 }
 
-class SweepTable : HexTable { 
+class SweepTable : HexTable {
 	this(Rectangle a, ubyte[] d) {
 		super(a, d, 4, 64);
 	}
@@ -754,8 +754,8 @@ class SweepTable : HexTable {
 			int p = ((i + viewOffset) & 63) * 4;
 			string col = "`05";
 			if(data[p+3] > 0) col = "`0d";
-			screen.fprint(area.x,area.y + i + 1, 
-						  format("`0c%02X:`05%02X %02X %02X %s%02X", 
+			screen.fprint(area.x,area.y + i + 1,
+						  format("`0c%02X:`05%02X %02X %02X %s%02X",
 								 (i + viewOffset) & 63,
 								 data[p], data[p+1], data[p+2], col, data[p+3]));
 		}
@@ -766,7 +766,7 @@ class SweepTable : HexTable {
 		int ofs = row * 4 + column;
 		i.setOutput(data[ofs..ofs+1]);
 		super.initializeInput();
-		
+
 	}
 
 	void seekTableEnd() {
@@ -809,12 +809,12 @@ class PulseTable : SweepTable {
 		}
 	}
 
-	override ContextHelp contextHelp() { 
+	override ContextHelp contextHelp() {
 		if(song.ver > 8)
-			return genPlayerContextHelp("Pulse table", 
+			return genPlayerContextHelp("Pulse table",
 										song.pulseDescriptions);
 		return ui.help.HELPMAIN;
-	}		
+	}
 }
 
 class FilterTable : SweepTable {
@@ -831,17 +831,17 @@ class FilterTable : SweepTable {
 	void update() {
 		if(shortTitles)
 			screen.fprint(area.x, area.y, "`b1F`01ilter");
-		else 
+		else
 			screen.fprint(area.x, area.y, "`01Filter (Alt-F)");
 		super.update();
 	}
 
-	override ContextHelp contextHelp() { 
+	override ContextHelp contextHelp() {
 		if(song.ver > 8)
-			return genPlayerContextHelp("Filter table", 
+			return genPlayerContextHelp("Filter table",
 										song.filterDescriptions);
 		return ui.help.HELPMAIN;
-	}		
+	}
 
 	override void showByteDescription() {
 		if(song.ver > 8) {

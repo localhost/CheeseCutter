@@ -13,7 +13,7 @@ import ct.base;
 class TrackVoice : SeqVoice {
 	InputTrack trackinput;
 	bool displayTracklist = false;
-	this(VoiceInit v) {		
+	this(VoiceInit v) {
 		super(v);
 		refreshPointer(0);
 		trackinput = new InputTrack(activeRow);
@@ -30,7 +30,7 @@ class TrackVoice : SeqVoice {
 		if(key.mods & KMOD_SHIFT) {
 			switch(key.raw)
 			{
-			case SDLK_INSERT:
+			case SDLK_INSERT, SDLK_HASH:
 				trackInsert(true);
 				break;
 			case SDLK_DELETE:
@@ -61,7 +61,7 @@ class TrackVoice : SeqVoice {
 		int rows = 0;
 		int lasttrk = tracks.getListLength();
  		int counter;
-		int scry = area.y + 1; 
+		int scry = area.y + 1;
 
 		void printTrack() {
 			if(!displayTracklist) return;
@@ -102,7 +102,7 @@ class TrackVoice : SeqVoice {
 				continue;
 			}
 			else {
-				printTrack(); 
+				printTrack();
 				counter += wseq.seq.rows;
 				scry++;
 			}
@@ -136,13 +136,13 @@ protected:
 		}
 		trackinput.init(activeRow);
 	}
-	
+
 	void trackDelete() { trackDelete(false); }
 	void trackDelete(bool doDelete) {
 		trackinput.flush();
 		{
 			if(!doDelete) {
-				
+
 				if(tracks.getListLength() == 1) {
 					tracks[0].setValue(0xa0, 0);
 				}
@@ -157,7 +157,7 @@ protected:
 
 					// TODO: add check that tracklist is not shrinked below trkOffset
 					/+
-					if(pos.trkOffset >= tracks.getListLength()-1) 
+					if(pos.trkOffset >= tracks.getListLength()-1)
 						super.step(-1);+/
 				}
 			}
@@ -187,13 +187,13 @@ protected:
 		if(key.mods & KMOD_CTRL) {
 			switch(key.raw)
 			{
-			case SDLK_INSERT, SDLK_RETURN:
+			case SDLK_INSERT, SDLK_HASH, SDLK_RETURN:
 				if(key.mods & KMOD_SHIFT) {
 					for(int i = 0; i < voices.length; i++) {
 						auto v = cast(TrackVoice)voices[i];
 						v.trackInsert(true);
 					}
-				} 
+				}
 				else {
 					(cast(TrackVoice)activeVoice).trackInsert(false);
 					jump(Jump.ToEnd,true);
@@ -204,12 +204,12 @@ protected:
 				if(key.mods & KMOD_SHIFT) {
 					for(int i = 0; i < voices.length; i++) {
 						auto v = cast(TrackVoice)voices[i];
-	
+
 //					if(v.pos.trkOffset < v.tracks.getListLength()-1)
 							v.trackDelete((key.mods & KMOD_SHIFT) > 0);
-					} 
+					}
 				}
-				else { 
+				else {
 					(cast(TrackVoice)activeVoice).trackDelete(false);
 					jump(Jump.ToEnd,true);
 				}
@@ -220,10 +220,10 @@ protected:
 			case SDLK_a:
 				(cast(TrackVoice)activeVoice).trackTrans(-1);
 				break;
-					
+
 			default:
 				break;
-			}	
+			}
 		}
 		if((key.mods & KMOD_CTRL) && (key.mods & KMOD_ALT)) {
 			switch(key.raw)
@@ -245,7 +245,7 @@ protected:
 			case SDLK_DELETE:
 				auto v = (cast(TrackVoice)activeVoice);
 				v.trackDelete(true);
-				if(v.pos.trkOffset >= v.tracks.getListLength()-1) 
+				if(v.pos.trkOffset >= v.tracks.getListLength()-1)
 					jump(Jump.ToEnd,true);
 				return OK;
 			default: break;
@@ -282,15 +282,15 @@ protected:
 			v.refresh();
 		}
 	}
-	
-	override void jump(int jumpto, bool center) { 
-	  activeVoice.trackFlush(posTable.pointerOffset); 
-	  super.jump(jumpto,center); 
+
+	override void jump(int jumpto, bool center) {
+	  activeVoice.trackFlush(posTable.pointerOffset);
+	  super.jump(jumpto,center);
 	}
 
 	override void activate() {
 		super.activate();
-	}	
+	}
 
 	override void deactivate() {
 		super.deactivate();

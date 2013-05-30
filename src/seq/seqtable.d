@@ -12,7 +12,7 @@ protected class SeqVoice : Voice {
 	InputSeq seqinput;
 	int mod;
 
-	this(VoiceInit v) {		
+	this(VoiceInit v) {
 		super(v);
 		activeRow = getSequenceData(0, 0);
 		seqinput = new InputSeq();
@@ -21,7 +21,7 @@ protected class SeqVoice : Voice {
 		(cast(InputSeq)seqinput).setPointer(area.x + 4, 0);
 		activeInput = seqinput;
 	}
-	
+
 	override int keypress(Keyinfo key) {
 		if(key.mods & KMOD_SHIFT) {
 			switch(key.raw)
@@ -32,7 +32,7 @@ protected class SeqVoice : Voice {
 				activeRow.seq.expand(activeRow.seqOffset,
 								   (t - (r + t) % t));
 				break;
-			case SDLK_INSERT:
+			case SDLK_INSERT, SDLK_HASH:
 				activeRow.seq.expand(activeRow.seqOffset, 1);
 				break;
 			case SDLK_DELETE:
@@ -45,13 +45,13 @@ protected class SeqVoice : Voice {
 		else if(key.mods & KMOD_CTRL) {
 			switch(key.raw)
 			{
-			case SDLK_INSERT:
+			case SDLK_INSERT, SDLK_HASH:
 				activeRow.seq.expand(0, 1, false);
 				break;
 			case SDLK_DELETE:
 				if(activeRow.seqOffset < activeRow.seq.rows - 1)
 					activeRow.seq.shrink(0, 1, false);
-				break;	
+				break;
 			case SDLK_q:
 				activeRow.seq.transpose(activeRow.seqOffset, 1);
 				break;
@@ -64,7 +64,7 @@ protected class SeqVoice : Voice {
 			case SDLK_s:
 				activeRow.seq.transpose(activeRow.seqOffset, -12);
 				break;
-				
+
 			default:
 				return seqinput.keypress(key);
 			}
@@ -75,18 +75,18 @@ protected class SeqVoice : Voice {
 				 return seqinput.step(-1);
 			 case SDLK_RIGHT:
 				 return seqinput.step(1);
-			 case SDLK_INSERT:
+			 case SDLK_INSERT, SDLK_HASH:
 				 activeRow.seq.insert(activeRow.seqOffset);
 				 break;
 			 case SDLK_DELETE:
 				 activeRow.seq.remove(activeRow.seqOffset);
 				 break;
 			 default:
-				 return seqinput.keypress(key);				
+				 return seqinput.keypress(key);
 			 }
 		return OK;
 	}
-	
+
 	override void refreshPointer(int y) {
 		assert(seqinput !is null);
 		assert(pos !is null);
@@ -112,7 +112,7 @@ protected class SeqVoice : Voice {
 		void printEmpty() {
 			screen.cprint(area.x - 1, scry, 1, 0, repeat(" ", 16));
 		}
-		
+
 		void printTrack() {
 			screen.cprint(area.x - 1, scry, 1, 0,
 						  " " ~ formatTrackValue(wseq.track.getValue2));
@@ -131,7 +131,7 @@ protected class SeqVoice : Voice {
 				}
 			}
 		}
-		
+
 		int rows = seq.rows;
 		while(scry >= area.y + 1) {
 			if(trkofs < 0) {
@@ -149,7 +149,7 @@ protected class SeqVoice : Voice {
 				continue;
 			}
 			else {
-				for(int i = rows - 1; i >= 0; 
+				for(int i = rows - 1; i >= 0;
 					i--, scry--, hcount--, row--) {
 					printEmpty();
 					if(scry < area.y + 1) break;
@@ -177,7 +177,7 @@ protected class SeqVoice : Voice {
 }
 
 protected class SequenceTable : VoiceTable {
-	this(Rectangle a, PosinfoTable pi) { 
+	this(Rectangle a, PosinfoTable pi) {
 		int x = 5 + com.fb.border + a.x;
 		for(int v=0;v<3;v++) {
 			Rectangle na = Rectangle(x, a.y, a.height, 13 + com.fb.border);
@@ -185,12 +185,12 @@ protected class SequenceTable : VoiceTable {
 			voices[v] = new SeqVoice(VoiceInit(song.tracks[v],
 											   na, pi[v]));
 		}
-		super(a, pi); 
+		super(a, pi);
 	}
 
-	override void activate() { 
+	override void activate() {
 		super.activate();
-		// works as scroll(1) would but does not store variables 
+		// works as scroll(1) would but does not store variables
 		int steps = 0;
 		foreach(Voice v; voices) {
 			with(v.pos) {
@@ -200,7 +200,7 @@ protected class SequenceTable : VoiceTable {
 					rowCounter = -pointerOffset;
 				}
 			}
-			
+
 		}
 
 	}
@@ -220,7 +220,7 @@ protected class SequenceTable : VoiceTable {
 				}
 			}
 		}
-		
+
 	}
 
 	override void stepVoice(int i) {
@@ -233,7 +233,7 @@ protected class SequenceTable : VoiceTable {
 
 		SeqVoice v = cast(SeqVoice)voices[n];
 		(cast(InputSeq)v.seqinput).columnReset(-c);
-	}		
+	}
 
 	// for positioning the cursor using mouse. x is not used
 	override void clickedAt(int x, int y, int button) {
@@ -299,7 +299,7 @@ protected class SequenceTable : VoiceTable {
 			default:
 				break;
 			}
-			
+
 		}
 		else if(key.mods & KMOD_CTRL) {
 			switch(key.raw) {

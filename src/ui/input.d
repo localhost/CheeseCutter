@@ -28,10 +28,10 @@ class Cursor {
 		int bg2, fg2;
 		int bg, fg;
 	}
-	
+
 	void set() { set(x,y); }
 	alias set refresh;
-  
+
 	void set(int nx, int ny) {
 		if(nx < 0 || ny < 0) return;
 		if(x != nx || y != ny) {
@@ -66,7 +66,7 @@ class Input {
 	alias x pointerX;
 	alias y pointerY;
 	alias width inputLength;
-	ubyte[] inarray, outarray; 
+	ubyte[] inarray, outarray;
 
 	this(ubyte[] p, int len) {
 		this(len);
@@ -89,7 +89,7 @@ class Input {
 	alias setCoord set;
 
 	int keypress(Keyinfo key) { assert(0); }
-	
+
 	int setValue(int v) { assert(0); }
 
 	int step(int st) {
@@ -100,7 +100,7 @@ class Input {
         }
         else if(nibble >= inputLength) {
 			nibble = 0;
-			return WRAP; 
+			return WRAP;
         }
         return OK;
 	}
@@ -113,7 +113,7 @@ class Input {
 		return toInt(inarray);
 	}
 	alias toInt value;
-	
+
 	int toInt(ubyte[] ar) {
 		int v;
 		for(int i = cast(int)(ar.length-1), sh; i >= 0; i--) {
@@ -122,7 +122,7 @@ class Input {
 		}
 		return v;
 	}
-	
+
 	int toInt(int b, int e) {
 		return toInt(inarray[b..e]);
 	}
@@ -165,7 +165,7 @@ class InputValue : Input {
 			inarray[i] = (p[j] >> sh) & 15;
 		}
 	}
-	
+
 	int keypress(Keyinfo key) {
 		int v;
 		if(key.mods & KMOD_CTRL) return 0;
@@ -185,7 +185,7 @@ class InputValue : Input {
 		}
 		return OK;
 	}
-	
+
 	void update() {
 		string fmt = std.string.format("0%dX",inputLength);
         screen.cprint(x, y, 1, -1, format("%" ~ fmt,toInt()));
@@ -227,12 +227,12 @@ class InputBoundedByte : InputValue {
 			return OK;
 		}
 	}
-	
+
 	int step(int st) {
         nibble += st;
-        if(nibble < 0) 
+        if(nibble < 0)
 			nibble = 0;
-        else if(nibble > 2) 
+        else if(nibble > 2)
 			nibble = 2;
         return OK;
 	}
@@ -241,7 +241,7 @@ class InputBoundedByte : InputValue {
 		screen.cprint(x, y, 1, -1, format("%02X ", toInt()));
 		cursor.set(x + nibble, y);
 	}
-	
+
 }
 
 class InputWord : InputValue {
@@ -258,23 +258,23 @@ class InputTrack : InputWord {
 		init(s);
 		flush();
 	}
-	
+
 	void init(SequenceRowData s) {
 		trk = s.trk;
 		buf[] = valueCheck(trk.trans, trk.no);
 		super.setOutput(buf);
 	}
-	
+
 	alias init refresh;
 
 	void flush() {
  		trk.setValue(buf[0], buf[1]);
 	}
-	
+
 	int setValue(int v) {
 		super.setValue(v);
 		buf[] = valueCheckNoWrap(buf[0], buf[1]);
-		super.setOutput(buf); 
+		super.setOutput(buf);
 		return OK;
 	}
 
@@ -333,7 +333,7 @@ private:
 	ubyte[] valueCheck(int tr, int no) {
 		if(tr < 0x80) tr = 0x80;
 		if(no < 0) no = 0;
-		if(no > 0x80) no = 0x00; 
+		if(no > 0x80) no = 0x00;
 		if(no >= MAX_SEQ_NUM) no = MAX_SEQ_NUM-1;
 		return cast(ubyte[])[tr,no];
 	}
@@ -357,7 +357,7 @@ class InputString : Input {
 	void setOutput(ubyte[] p) {
 		assert(0);
 	}
-	
+
 	void setOutput(string s) {
 		int tl = cast(int)s.length;
 		char[] str2 = std.utf.toUTF8(s.dup).dup;
@@ -369,7 +369,7 @@ class InputString : Input {
 		if(nibble >= inputLength)
 			nibble = inputLength - 1;
 	}
-	
+
 	string toString() {
 		return toString(false);
 	}
@@ -429,7 +429,7 @@ class InputString : Input {
 			void insert() {
 				instring[nibble+1 .. $] = instring[nibble .. $-1].dup;
 			}
-			if(key.raw == SDLK_INSERT) {
+			if(key.raw == SDLK_INSERT || key.raw == SDLK_HASH) {
 				insert();
 				setChar(' ');
 			}
@@ -452,9 +452,9 @@ class InputString : Input {
 	}
 
 	int getLength() {
-                
+
 		for(int i = inputLength - 1; i >= 0; i--) {
-			if(instring[i] != ' ') 
+			if(instring[i] != ' ')
 				return i+1;
 		}
 		return 0;
@@ -508,7 +508,7 @@ abstract class Newinput : Input {
 		case '.':
 			clearRow();
 			return WRAP;
-		default: 
+		default:
 			if(keytab == null) return WRAP;
 			int value = valueKeyReader(key, keytab);
 			if(value < 0) return OK;
@@ -517,7 +517,7 @@ abstract class Newinput : Input {
 		return OK;
 	}
 
-protected:	
+protected:
 
 	int valuekeyHandler(int value) {
 		if(width == 1) invalue = value;
@@ -556,7 +556,7 @@ protected:
 	void update() {
 		assert(0);
 	}
-	
+
 protected:
 
 	static int valueKeyReader(Keyinfo key,  const char[] keytab) {
@@ -574,11 +574,11 @@ protected:
 class InputOctave : Newinput {
 	int keypress(Keyinfo key) {
 		return super.keypress(key,"012345678");
-	}	
+	}
 
 	override void setRowValue(int value) {
 		if(element.note.value >= 3) {
-			int note = ((element.note.value + element.transpose) % 12) 
+			int note = ((element.note.value + element.transpose) % 12)
 				+ value * 12 - element.transpose;
 			if(note >= 3 && note < 0x5f)
 				element.note = cast(ubyte)note;
@@ -677,12 +677,12 @@ class InputNote : Newinput {
 		default:
 			break;
 		}
-		
+
 		if(song.ver >= 7) {
 			keyjam.element.transpose = element.transpose;
-			keyjam.keypress(key); 
+			keyjam.keypress(key);
 		}
-		int r = super.keypress(key,"1!azsxdcvgbhnjmq2w3er5t6y7ui9o0p"); 
+		int r = super.keypress(key,"1!azsxdcvgbhnjmq2w3er5t6y7ui9o0p");
 		// no cache for notecolumn
 		memvalue = -1;
 		return r;
@@ -725,7 +725,7 @@ class InputNote : Newinput {
 			break;
 		}
 	}
-	
+
 	int step(int st) {
 		if(st >= 0) return WRAPR;
 		return WRAPL;
@@ -764,7 +764,7 @@ class InputKeyjam : Newinput {
 			element.instr = cast(ubyte)(ui.ui.activeInstrument);
 		audio.player.playNote(element);
 	}
-	
+
 	int keypress(Keyinfo key) {
 		return super.keypress(key,"1!azsxdcvgbhnjmq2w3er5t6y7ui9o0p");
 	}
@@ -822,7 +822,7 @@ final class InputSeq : Newinput {
 		default:
 			break;
 		}
-		
+
 		return activeInput.keypress(key);
 	}
 
@@ -864,7 +864,7 @@ final class InputSeq : Newinput {
 			foreach(inp; inputters) {
 				inp.nibble = 0;
 			}
-			
+
 			activeInputNo++;
 			if(activeInputNo >= inputters.length) {
 				activeInputNo = 0;
@@ -873,7 +873,7 @@ final class InputSeq : Newinput {
 			}
 			activeInput = inputters[activeInputNo];
 			activeInput.nibble = 0;
-			
+
 		}
 		else if(r == WRAPL) {
 			foreach(inp; inputters) {
@@ -883,7 +883,7 @@ final class InputSeq : Newinput {
 			if(activeInputNo < 0) {
 				activeInputNo = cast(int)(inputters.length - 1);
 				activeInput = inputters[activeInputNo];
-				
+
 				return WRAPL;
 			}
 			activeInput.nibble = activeInput.width - 1;
@@ -894,11 +894,11 @@ final class InputSeq : Newinput {
 
 	void update() {
 		screen.cprint(pointerX, pointerY, 1, -1, element.toPlainString());
-		
+
 		assert(activeInput == inputters[activeInputNo]);
 		int xofs = [0, 2, 4, 7][activeInputNo];
 		cursor.set(pointerX + xofs + activeInput.nibble, pointerY);
-	}	
+	}
 }
 
 class InputSpecial : InputValue {
@@ -908,12 +908,12 @@ class InputSpecial : InputValue {
 
 	void setOutput(ubyte[] p) {
 	}
-	
+
 	int setValue(int v) {
 		inarray[nibble] = v & 15;
 		return OK;
 	}
-	
+
 	void update() {
 		const int[] xoffs = [0, 2, 3, 5, 6];
         screen.cprint(x, y, 1, -1, format("%01X-%02X %02X",inarray[0],toInt(inarray[1..3]),toInt(inarray[3..5])));
